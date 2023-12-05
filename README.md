@@ -6,4 +6,5 @@ https://drive.google.com/drive/folders/1ukUIqOz2QWET8z06v0awahtUrueg_hOR?usp=sha
 Integrantes 
 
 Javier Antonio Gutierrez Ramirez 
+----------------------------------
 Darinel Monjaraz Ruiz
