@@ -1,69 +1,67 @@
-class ValidateFNC {
+class CodeValidator {
     constructor() {
-        this.stack = ['$'];
-        this.states = []
+        this.symbolStack = ['$'];
+        this.stateHistory = [];
     }
 
-    validate(input) {
-
-        this.add(['S']);
-        let pointer = 0;
+    validate(codeInput) {
+        this.pushSymbols(['S']);
+        let codePointer = 0;
 
         while (true) {
-            console.log(this.stack);
-            this.states.push([...this.stack]);
-            const stackTop = this.topOfStack();
-            const inputSymbol = input[pointer];
+            console.log(this.symbolStack);
+            this.stateHistory.push([...this.symbolStack]);
+            const stackTop = this.getTopSymbol();
+            const inputSymbol = codeInput[codePointer];
 
             if (stackTop === '$' && inputSymbol === undefined) {
-                return { isValid: true, stack: this.states };
+                return { isValid: true, stack: this.stateHistory };
             }
 
-            if (stackTop.length > 1 && this.isTerminal(stackTop)) {
+            if (stackTop.length > 1 && this.isTerminalSymbol(stackTop)) {
                 for (let i = 0; i < stackTop.length - 1; i++) {
-                    if (stackTop[i] === input[pointer]) {
+                    if (stackTop[i] === codeInput[codePointer]) {
                     } else {
                         break;
                     }
-                    this.remove();
-                    pointer += stackTop.length;
+                    this.popSymbol();
+                    codePointer += stackTop.length;
                 }
             } else if (stackTop === inputSymbol) {
-                this.remove();
-                pointer++;
+                this.popSymbol();
+                codePointer++;
             } else {
-                const production = this.getProduction(stackTop, inputSymbol);
+                const production = this.getSymbolProduction(stackTop, inputSymbol);
                 if (production) {
-                    this.remove();
-                    this.add(production);
+                    this.popSymbol();
+                    this.pushSymbols(production);
                 } else {
-                    return { isValid: false, stack: this.states };
+                    return { isValid: false, stack: this.stateHistory };
                 }
             }
         }
     }
 
-    add(symbols) {
+    pushSymbols(symbols) {
         for (let i = symbols.length - 1; i >= 0; i--) {
-            this.stack.push(symbols[i]);
+            this.symbolStack.push(symbols[i]);
         }
     }
 
-    remove() {
-        return this.stack.pop();
+    popSymbol() {
+        return this.symbolStack.pop();
     }
 
-    topOfStack() {
-        return this.stack[this.stack.length - 1];
+    getTopSymbol() {
+        return this.symbolStack[this.symbolStack.length - 1];
     }
 
-    isTerminal(symbol) {
+    isTerminalSymbol(symbol) {
         return symbol === symbol.toLowerCase();
     }
 
-
-    getProduction(nonTerminal, terminal) {
-        const ruleMappings = {
+    getSymbolProduction(nonTerminal, terminal) {
+        const productionMappings = {
             'S': () => {
                 const mappings = {
                     'v': () => ['R9', 'V1'],
@@ -75,18 +73,16 @@ class ValidateFNC {
                 return mappings[terminal] ? mappings[terminal]() : null;
             },
 
-            //tipo de funcion
             'T': () => {
                 const mappings = {
                     'p': () => ['R5', 'M2'],
                     'default': () => ['L', 'N2']
                 };
-                
+
                 const mappingFunction = mappings[terminal] || mappings['default'];
                 return mappingFunction ? mappingFunction() : null;
             },
 
-            // Variables
             'V1': () => ['L', 'V2'],
             'V2': () => ['O4', 'V3'],
             'V3': () => ['Y', 'S1'],
@@ -99,8 +95,7 @@ class ValidateFNC {
                 else {
                     return ' '
                 }
-            },
-
+            },   
             // Funciones
             'N1': () => ['L', 'N2'],
             'N2': () => ['S2', 'N3'],
@@ -171,21 +166,15 @@ class ValidateFNC {
             'S4': () => [' }'],
             'S5': () => ['('],
             'S6': () => [')'],
-        }
-        return ruleMappings[nonTerminal] ? ruleMappings[nonTerminal]() : null;
+
+        };
+
+        return productionMappings[nonTerminal] ? productionMappings[nonTerminal]() : null;
     }
-
-
 }
 
-const automaton = new ValidateFNC();
-const result = automaton.validate('si suma > 4 realizar { suma - 2 ; }');
-
-export default function validateAutomaton(inputString) {
-    const automaton = new ValidateFNC();
-    const result = automaton.validate(inputString);
+export default function validateCode(inputString) {
+    const codeValidator = new CodeValidator();
+    const result = codeValidator.validate(inputString);
     return result;
 }
-
-
-
